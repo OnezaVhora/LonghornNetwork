@@ -1,15 +1,10 @@
-/*
- * Loading data from Main.java. Use the given main.java to load data. This can be displayed by simply showing the different test cases being loaded once the UI loads up. [20 points]
-Visualize the data as a graph. Display a graph that shows students and their names and connections as weighted edges. Must be displayed as a graph. [30 points]
-visualize roommates and referral path finder within the student graph.
-Visualize each student's friend request and chat history. If 'None' then show 'None'. [10 points]
-Intuitive & Friendly User Interface. Is the user interface intuitive to use, are their load data, filter data by student, run buttons or equivalents? Is the user interface just one or two monotone colors or vibrant? [10 points]
- */
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.*;
 import java.util.List;
+import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.Timer;
 
 public class NetworkLabUI extends JFrame {
     private JComboBox<String> testCaseSelector;
@@ -24,6 +19,9 @@ public class NetworkLabUI extends JFrame {
 
     private static final Color BACKGROUND_COLOR = Color.decode("#BF5700");
     private static final Color TEXT_COLOR = Color.WHITE;
+    private static final String LOGO_PATH = "C:\\Users\\oneza\\OneDrive\\Desktop\\lab5\\LonghornNetwork\\logo.png";
+    //"C:\Users\oneza\OneDrive\Desktop\lab5\LonghornNetwork\logo.png"
+    private JLabel logoLabel;
 
     public NetworkLabUI() {
         super("Longhorn Network Lab UI");
@@ -43,7 +41,37 @@ public class NetworkLabUI extends JFrame {
         tabs.addTab("Roommate Pairs", createRoommatePanel());
         tabs.addTab("Referral Path", createReferralPanel());
 
-        setContentPane(new GlitterBackgroundPanel(tabs));
+        //setContentPane(new GlitterBackgroundPanel(createMainPanel(tabs)));
+        setContentPane(createMainPanel(tabs));  
+    }
+
+    private JPanel createMainPanel(JTabbedPane tabs) {
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+        
+        // Logo Panel
+        JPanel logoPanel = new JPanel();
+        logoPanel.setBackground(BACKGROUND_COLOR);
+        logoLabel = createLogoLabel(LOGO_PATH);
+        logoPanel.add(logoLabel);
+
+        // Add logo and tabs to the main panel
+        mainPanel.add(logoPanel, BorderLayout.NORTH);
+        mainPanel.add(tabs, BorderLayout.CENTER);
+
+        return mainPanel;
+    }
+
+    private JLabel createLogoLabel(String path) {
+        try {
+            BufferedImage logoImage = ImageIO.read(new File(path));
+            ImageIcon logoIcon = new ImageIcon(logoImage.getScaledInstance(150, 150, Image.SCALE_SMOOTH));
+            JLabel logoLabel = new JLabel(logoIcon);
+            return logoLabel;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new JLabel("Logo not found");
+        }
     }
 
     private JPanel createTestRunnerPanel() {
@@ -266,72 +294,14 @@ public class NetworkLabUI extends JFrame {
                 UniversityStudent student = entry.getKey();
                 Point point = entry.getValue();
                 g2.fillOval(point.x - 10, point.y - 10, 20, 20);
-                g2.drawString(student.getName(), point.x + 12, point.y);
-            }
-        }
-    }
-
-    private static class GlitterBackgroundPanel extends JPanel {
-        private static final int NUM_STARS = 100;
-        private final Timer timer;
-        private final List<Star> stars;
-
-        public GlitterBackgroundPanel(JComponent component) {
-            setLayout(new BorderLayout());
-            add(component, BorderLayout.CENTER);
-            stars = new ArrayList<>();
-
-            Random rand = new Random();
-
-            // Ensure the component's width and height are positive
-            int width = Math.max(getWidth(), 1); // Ensure width is at least 1
-            int height = Math.max(getHeight(), 1); // Ensure height is at least 1
-
-            for (int i = 0; i < NUM_STARS; i++) {
-                stars.add(new Star(rand.nextInt(width), rand.nextInt(height)));
-            }
-
-            timer = new Timer(50, e -> {
-                for (Star star : stars) {
-                    star.move();
-                }
-                repaint();
-            });
-            timer.start();
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            for (Star star : stars) {
-                star.paint(g);
-            }
-        }
-
-        private static class Star {
-            private int x, y;
-
-            public Star(int x, int y) {
-                this.x = x;
-                this.y = y;
-            }
-
-            public void move() {
-                x += (Math.random() - 0.5) * 10;
-                y += (Math.random() - 0.5) * 10;
-            }
-
-            public void paint(Graphics g) {
-                g.setColor(Color.WHITE);
-                g.fillRect(x, y, 2, 2);
+                g2.drawString(student.getName(), point.x + 12, point.y + 5);
             }
         }
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            NetworkLabUI ui = new NetworkLabUI();
-            ui.setVisible(true);
+            new NetworkLabUI().setVisible(true);
         });
     }
 }
