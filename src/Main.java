@@ -75,6 +75,21 @@ public static String displayFriendRequestsAndChats(List<UniversityStudent> stude
                 Arrays.asList("Dana"), Arrays.asList("Moderna", "Pfizer")
         ));
 
+          // Add chat messages
+        students.get(0).addChatMessage("Bob", "Hey, how's it going?");
+        students.get(1).addChatMessage("Alice", "Not much, just studying!");
+        students.get(2).addChatMessage("Frank", "Ready for the exam?");
+        students.get(3).addChatMessage("Charlie", "Yes, let's ace it!");
+        students.get(4).addChatMessage("Evan", "Looking forward to the internship!");
+        students.get(5).addChatMessage("Dana", "Me too! Excited about the project.");
+
+        students.get(0).addFriendRequest("Bob");
+        students.get(1).addFriendRequest("Alice");
+        students.get(2).addFriendRequest("Frank");
+        students.get(3).addFriendRequest("Charlie");
+        students.get(4).addFriendRequest("Evan");
+        students.get(5).addFriendRequest("Dana");
+                
         return students;
     }
 
@@ -116,6 +131,18 @@ public static String displayFriendRequestsAndChats(List<UniversityStudent> stude
                 "Leo", 20, "Male", 1, "History", 3.5,
                 Collections.emptyList(), Arrays.asList("None")
         ));
+
+        students.get(0).addChatMessage("Kim", "Ready for the exam?");
+        students.get(1).addChatMessage("Jack", "Yes, let's study together!");
+        students.get(2).addChatMessage("Leo", "I have no roommate preferences.");
+
+        students.get(0).addChatMessage("Leo", "Let's work on the project.");
+        students.get(1).addChatMessage("Jack", "Sure! I'm in.");
+        students.get(2).addChatMessage("Kim", "Sounds good!");
+
+        students.get(0).addFriendRequest("Kim");
+        students.get(1).addFriendRequest("Jack");
+        students.get(2).addFriendRequest("Leo");
 
         return students;
     }

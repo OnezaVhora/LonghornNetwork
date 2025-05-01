@@ -75,8 +75,9 @@ public void addFriendRequest(String requester) {
     friendRequests.add(requester);
 }
 
-public void addChatMessage(String message) {
-    chatHistory.add(message);
+public void addChatMessage(String sender, String message) {
+    // Update implementation to handle sender and message
+    chatHistory.add(sender + ": " + message);
 }
 
 //create universitystudent from map of key-value pairs

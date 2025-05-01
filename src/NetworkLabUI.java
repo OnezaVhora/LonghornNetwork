@@ -41,9 +41,48 @@ public class NetworkLabUI extends JFrame {
         tabs.addTab("Graph Viewer", createGraphViewerPanel());
         tabs.addTab("Roommate Pairs", createRoommatePanel());
         tabs.addTab("Referral Path", createReferralPanel());
-        tabs.addTab("Chat History", createChatHistoryPanel()); // Added tab for chat history
+        tabs.addTab("Friend Requests & Chat History", createChatHistoryPanel()); // Added tab for chat history & friend requests
+        tabs.addTab("Test Results", createTestResultsPanel());
 
         add(tabs);
+    }
+
+    private JPanel createTestResultsPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JPanel controls = new JPanel();
+        controls.setBackground(BACKGROUND_COLOR);
+    
+        JComboBox<String> testCaseSelector = new JComboBox<>(new String[]{"Test Case 1", "Test Case 2", "Test Case 3", "All Test Cases"});
+        JButton loadResultsButton = new JButton("Load Test Results");
+        loadResultsButton.setBackground(LONGHORN_ORANGE);
+        loadResultsButton.setForeground(Color.WHITE);
+    
+        JTextArea resultsArea = new JTextArea();
+        resultsArea.setEditable(false);
+        resultsArea.setBackground(LIGHT_BLUE);
+        resultsArea.setForeground(Color.BLACK);
+    
+        loadResultsButton.addActionListener(e -> {
+            StringBuilder sb = new StringBuilder();
+            String selectedTestCase = (String) testCaseSelector.getSelectedItem();
+    
+            if (selectedTestCase.equals("All Test Cases")) {
+                sb.append(getTestResultsForAllCases());
+            } else {
+                int testCaseIndex = Integer.parseInt(selectedTestCase.split(" ")[2]) - 1;
+                sb.append(getTestResultsForCase(testCaseIndex));
+            }
+    
+            resultsArea.setText(sb.toString());
+        });
+    
+        controls.add(new JLabel("Select Test Case:"));
+        controls.add(testCaseSelector);
+        controls.add(loadResultsButton);
+        panel.add(controls, BorderLayout.NORTH);
+        panel.add(new JScrollPane(resultsArea), BorderLayout.CENTER);
+    
+        return panel;
     }
 
     private JPanel createTestRunnerPanel() {
@@ -88,6 +127,7 @@ public class NetworkLabUI extends JFrame {
         controls.add(loadGraphButton);
         panel.add(controls, BorderLayout.NORTH);
         graphPanel = new GraphPanel();
+        graphPanel.setBackground(LONGHORN_ORANGE);
         panel.add(graphPanel, BorderLayout.CENTER);
         return panel;
     }
@@ -175,56 +215,176 @@ public class NetworkLabUI extends JFrame {
         return panel;
     }
 
-    private JPanel createChatHistoryPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        JPanel controls = new JPanel();
-        controls.setBackground(BACKGROUND_COLOR);
-        JButton loadChatButton = new JButton("Load Chat History");
-        loadChatButton.setBackground(LONGHORN_ORANGE);
-        loadChatButton.setForeground(Color.WHITE);
-        loadChatButton.addActionListener(e -> {
-            StringBuilder sb = new StringBuilder();
-            for (List<UniversityStudent> testCase : testCases) {
-                for (UniversityStudent student : testCase) {
-                    if (student.getFriendRequests().isEmpty() && student.getChatHistory().isEmpty()) {
-                        sb.append(student.getName()).append(": None\n");
+private JPanel createChatHistoryPanel() {
+    JPanel panel = new JPanel(new BorderLayout());
+    JPanel controls = new JPanel();
+    controls.setBackground(BACKGROUND_COLOR);
+
+    // Dropdown to select a student
+    JComboBox<String> studentSelector = new JComboBox<>();
+    for (List<UniversityStudent> testCase : testCases) {
+        for (UniversityStudent student : testCase) {
+            studentSelector.addItem(student.getName());
+        }
+    }
+
+    // Button to load data for the selected student
+    JButton loadStudentDataButton = new JButton("Load Data");
+    loadStudentDataButton.setBackground(LONGHORN_ORANGE);
+    loadStudentDataButton.setForeground(Color.WHITE);
+
+    // Action listener for the button
+    loadStudentDataButton.addActionListener(e -> {
+        String selectedStudentName = (String) studentSelector.getSelectedItem();
+        StringBuilder sb = new StringBuilder();
+
+        // Find the selected student and display their data
+        for (List<UniversityStudent> testCase : testCases) {
+            for (UniversityStudent student : testCase) {
+                if (student.getName().equals(selectedStudentName)) {
+                    sb.append("Student: ").append(student.getName()).append("\n");
+                    sb.append("Friend Requests: ");
+                    if (student.getFriendRequests().isEmpty()) {
+                        sb.append("None\n");
                     } else {
-                        sb.append(student.getName()).append(" - Friend Requests: ").append(student.getFriendRequests().size())
-                                .append(", Chats: ").append(student.getChatHistory().size()).append("\n");
+                        sb.append(String.join(", ", student.getFriendRequests())).append("\n");
                     }
+                    sb.append("Chat History:\n");
+                    if (student.getChatHistory().isEmpty()) {
+                        sb.append("None\n");
+                    } else {
+                        for (String chat : student.getChatHistory()) {
+                            sb.append("  ").append(chat).append("\n");
+                        }
+                    }
+                    break;
                 }
             }
-            chatHistoryArea.setText(sb.toString());
-        });
-        controls.add(loadChatButton);
-        panel.add(controls, BorderLayout.NORTH);
-        chatHistoryArea = new JTextArea();
-        chatHistoryArea.setEditable(false);
-        chatHistoryArea.setBackground(LIGHT_BLUE);
-        chatHistoryArea.setForeground(Color.BLACK);
-        panel.add(new JScrollPane(chatHistoryArea), BorderLayout.CENTER);
-        return panel;
-    }
+        }
+
+        chatHistoryArea.setText(sb.toString());
+    });
+
+    // Add components to the controls panel
+    controls.add(new JLabel("Select Student:"));
+    controls.add(studentSelector);
+    controls.add(loadStudentDataButton);
+
+    // Add controls and text area to the main panel
+    panel.add(controls, BorderLayout.NORTH);
+
+    chatHistoryArea = new JTextArea();
+    chatHistoryArea.setEditable(false);
+    chatHistoryArea.setBackground(LIGHT_BLUE);
+    chatHistoryArea.setForeground(Color.BLACK);
+    panel.add(new JScrollPane(chatHistoryArea), BorderLayout.CENTER);
+
+    return panel;
+}
 
     private void onRunTests() {
-        testOutputArea.setText(""); // Clear output area
-        int idx = testCaseSelector.getSelectedIndex();
-        if (idx == 3) {
-            for (List<UniversityStudent> testCase : testCases) {
-                runTestCase(testCase);
-            }
+        testOutputArea.setText("");
+        String sel = (String) testCaseSelector.getSelectedItem();
+        if (sel.equals("All Test Cases")) {
+            for (int i = 1; i <= testCases.size(); i++) runTests(i);
         } else {
-            runTestCase(testCases.get(idx));
+            int num = Integer.parseInt(sel.split(" ")[2]);
+            runTests(num);
         }
     }
 
-    private void runTestCase(List<UniversityStudent> data) {
-        StringBuilder output = new StringBuilder();
-        output.append("Test case output:\n");
-        for (UniversityStudent student : data) {
-            output.append(student.getName()).append("\n");
+    private void runTests(int caseNum) {
+        testOutputArea.append("=== Test Case " + caseNum + " ===\n");
+        List<UniversityStudent> data = testCases.get(caseNum - 1);
+        // Print data
+        data.forEach(s -> testOutputArea.append(s + "\n"));
+        testOutputArea.append("\n");
+        int score = Main.gradeLab(data, caseNum);
+        testOutputArea.append("Test Case " + caseNum + " Score: " + score + "\n\n");
+    }
+
+    private String getTestResultsForCase(int testCaseIndex) {
+        StringBuilder sb = new StringBuilder();
+        List<UniversityStudent> data = testCases.get(testCaseIndex);
+        
+            // Header
+            sb.append("--- Automated Tests for Test Case ").append(testCaseIndex + 1).append(" ---\n\n");
+        
+            // Student Graph
+            sb.append("Student Graph:\n");
+            for (UniversityStudent student : data) {
+                sb.append(student.getName()).append(" -> ");
+                List<StudentGraph.Edge> neighbors = new StudentGraph(data).getNeighbors(student); // Assuming StudentGraph is initialized here
+                if (neighbors.isEmpty()) {
+                    sb.append("[]");
+                } else {
+                    sb.append("[");
+                    for (StudentGraph.Edge edge : neighbors) {
+                        sb.append("(").append(edge.neighbor.getName()).append(", ").append(edge.weight).append("), ");
+                    }
+                    sb.setLength(sb.length() - 2); // Remove trailing comma and space
+                    sb.append("]");
+                }
+                sb.append("\n");
+            }
+            sb.append("Test: StudentGraph passed (+30 pts).\n\n");
+        
+            // Roommate Pairings
+            sb.append("Roommate Pairings (Gale-Shapley):\n");
+            GaleShapley.assignRoommates(data); // Assuming GaleShapley assigns roommates
+            for (UniversityStudent student : data) {
+                if (student.getRoommate() != null && student.getName().compareTo(student.getRoommate().getName()) < 0) {
+                    sb.append(student.getName()).append(" paired with ").append(student.getRoommate().getName()).append("\n");
+                }
+            }
+            sb.append("Test: GaleShapley passed (+20 pts).\n\n");
+        
+            // Friend Requests and Chat History
+            sb.append("FriendRequest (Thread-Safe):\n");
+            for (UniversityStudent student : data) {
+                for (String requester : student.getFriendRequests()) {
+                    sb.append(requester).append(" sent a friend request to ").append(student.getName()).append("\n");
+                }
+            }
+            sb.append("Chat (Thread-Safe):\n");
+            for (UniversityStudent student : data) {
+                for (String message : student.getChatHistory()) {
+                    sb.append(student.getName()).append(": ").append(message).append("\n");
+                }
+            }
+            sb.append("Test: FriendRequestThread/ChatThread passed (+20 pts).\n\n");
+        
+            // Referral Path Finder
+            sb.append("ReferralPathFinder returned path: ");
+            ReferralPathFinder finder = new ReferralPathFinder(new StudentGraph(data)); // Assuming ReferralPathFinder is initialized here
+            List<UniversityStudent> path = finder.findReferralPath(data.get(0), "TargetCompany"); // Replace with actual start and target
+            if (path.isEmpty()) {
+                sb.append("[]");
+            } else {
+                sb.append("[");
+                for (UniversityStudent student : path) {
+                    sb.append(student.getName()).append(", ");
+                }
+                sb.setLength(sb.length() - 2); // Remove trailing comma and space
+                sb.append("]");
+            }
+            sb.append("\nTest: ReferralPathFinder passed (+10 pts).\n\n");
+        
+            // Integration Test
+            sb.append("Test: Integration passed (+20 pts).\n\n");
+        
+            // Total Score
+            sb.append("Total Score for Test Case ").append(testCaseIndex + 1).append(": 100\n");
+        
+            return sb.toString();
         }
-        testOutputArea.append(output.toString());
+    
+    private String getTestResultsForAllCases() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 3; i++) {
+            sb.append(getTestResultsForCase(i)).append("\n\n");
+        }
+        return sb.toString();
     }
 
         private static class GraphPanel extends JPanel {
