@@ -3,6 +3,17 @@ import java.util.concurrent.*;
 
 // Main.java - Self-contained testing & grading with multiple built‑in test cases.
 public class Main {
+
+    // Add this method to the Main class
+public static String displayFriendRequestsAndChats(List<UniversityStudent> students) {
+    StringBuilder result = new StringBuilder();
+    for (UniversityStudent student : students) {
+        result.append("Student: ").append(student.getName()).append("\n");
+        result.append("Friend Requests: ").append(student.getFriendRequests()).append("\n");
+        result.append("Chat History: ").append(student.getChatHistory()).append("\n\n");
+    }
+    return result.toString();
+}
     public static void main(String[] args) {
         // Create a list of test cases.
         List<List<UniversityStudent>> testCases = new ArrayList<>();

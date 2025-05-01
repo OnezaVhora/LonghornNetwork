@@ -8,6 +8,9 @@ public class UniversityStudent extends Student {
     // TODO: Constructor and additional methods to be implemented
 
     private UniversityStudent roommate; 
+    private List<String> friendRequests = new ArrayList<>();
+    private List<String> chatHistory = new ArrayList<>();
+
 
 
     /**
@@ -60,7 +63,21 @@ public List<String> PreviousInternships() {
     return previousInternships;
 }
 
+public List<String> getFriendRequests() {
+    return friendRequests;
+}
 
+public List<String> getChatHistory() {
+    return chatHistory;
+}
+
+public void addFriendRequest(String requester) {
+    friendRequests.add(requester);
+}
+
+public void addChatMessage(String message) {
+    chatHistory.add(message);
+}
 
 //create universitystudent from map of key-value pairs
 public static UniversityStudent fromMap(Map<String, String> data){
